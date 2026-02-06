@@ -405,7 +405,7 @@
 
     @media (max-width: 520px), (pointer: coarse){
       .row{ height:auto; display:flex; gap:10px; flex-wrap:wrap; }
-      #noBtn{ position:relative; left:0!important; top:0!important; }
+      #noBtn{ position:relative; left:0; top:0; }
       .stage.open .envelopeWrap{
         transform: translate(-50%,-50%) translate3d(0, calc(50vh - 160px), 0) scale(.98) rotate(0deg);
       }
@@ -694,7 +694,7 @@
 
     function placeNoSafelyRight(){
       if (state !== "open") return;
-      if (isTouchLayout()) return;
+      if (isTouchLayout() && !force) return;
 
       const a = arena.getBoundingClientRect();
       const y = yesBtn.getBoundingClientRect();
@@ -708,7 +708,7 @@
     window.addEventListener("resize", placeNoSafelyRight);
 
     let dodges = 0;
-    function dodge(){
+    function dodge(force=false){
       if (state !== "open") return;
       if (isTouchLayout()) return;
 
@@ -775,9 +775,9 @@
       maybeDodgeUnderPointer(e.clientX, e.clientY);
     }, { passive:true });
 
-    noBtn.addEventListener("pointerenter", (e) => { e.stopPropagation(); dodge(); });
-    noBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); dodge(); });
-    noBtn.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); dodge(); });
+    noBtn.addEventListener("pointerenter", (e) => { e.stopPropagation(); dodge(false); });
+    noBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); dodge(true); });
+    noBtn.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); dodge(true); });
 
     // ====== toast ======
     let toastEl;
