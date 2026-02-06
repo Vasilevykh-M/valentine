@@ -404,8 +404,13 @@
     }
 
     @media (max-width: 520px), (pointer: coarse){
-      .row{ height:auto; display:flex; gap:10px; flex-wrap:wrap; }
-      #noBtn{ position:relative; left:0; top:0; }
+      /* мобильная раскладка: Да по центру, Нет абсолютный (может убегать) */
+      .row{ height: 90px; display:flex; justify-content:center; align-items:flex-start; gap:10px; }
+      #noBtn{ position:absolute; left:0; top:0; }
+            .stage.open .envelopeWrap{ transform: translate(-50%,-50%) translate3d(0, calc(50vh - 160px), 0) scale(.98) rotate(0deg); }
+
+    }
+
       .stage.open .envelopeWrap{
         transform: translate(-50%,-50%) translate3d(0, calc(50vh - 160px), 0) scale(.98) rotate(0deg);
       }
@@ -692,9 +697,14 @@
       toast(`Ура! 💞`);
     });
 
-    function placeNoSafelyRight(){
+    function placeNoSafelyRight(force=false){
       if (state !== "open") return;
-      if (isTouchLayout() && !force) return;
+
+      // Всегда держим «Нет» в абсолютном позиционировании внутри арены
+      noBtn.style.position = "absolute";
+      noBtn.style.right = "auto";
+      noBtn.style.bottom = "auto";
+      noBtn.style.transform = "translate3d(0,0,0)";
 
       const a = arena.getBoundingClientRect();
       const y = yesBtn.getBoundingClientRect();
@@ -705,12 +715,19 @@
       noBtn.style.left = left + "px";
       noBtn.style.top = "0px";
     }
-    window.addEventListener("resize", placeNoSafelyRight);
+    window.addEventListener("resize", () => placeNoSafelyRight(true));
 
     let dodges = 0;
     function dodge(force=false){
       if (state !== "open") return;
-      if (isTouchLayout()) return;
+      // На тач-устройствах “убегаем” только по тапу/клику (force=true)
+      if (isTouchLayout() && !force) return;
+
+      // Всегда позиционируем относительно арены, иначе можно «уехать» за карточку
+      noBtn.style.position = "absolute";
+      noBtn.style.right = "auto";
+      noBtn.style.bottom = "auto";
+      noBtn.style.transform = "translate3d(0,0,0)";
 
       dodges++;
       const maxDodges = 6;
@@ -748,8 +765,11 @@
       }
 
       const yOffset = maxY > 0 ? Math.random() * Math.min(8, maxY) : 0;
-      noBtn.style.left = Math.round(x) + "px";
-      noBtn.style.top  = Math.round(yOffset) + "px";
+      // финальная страховка на случай изменений размеров/шрифтов
+      const safeX = Math.max(0, Math.min(maxX, Math.round(x)));
+      const safeY = Math.max(0, Math.min(maxY, Math.round(yOffset)));
+      noBtn.style.left = safeX + "px";
+      noBtn.style.top  = safeY + "px";
     }
 
     // фикс “первого наведения”
